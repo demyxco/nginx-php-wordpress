@@ -202,13 +202,11 @@ RUN set -ex; \
     mkdir -p /var/log/demyx
 
 RUN set -ex; \
-    apk add --no-cache --virtual .wp-deps; \
     mkdir -p /var/www/html; \
 	wget https://wordpress.org/latest.tar.gz -qO /usr/src/latest.tar.gz; \
 	tar -xzf /usr/src/latest.tar.gz -C /usr/src; \
 	rm /usr/src/latest.tar.gz; \
-	chown -R www-data:www-data /usr/src/wordpress; \
-    apk del .wp-deps && rm -rf /var/cache/apk/*
+	chown -R www-data:www-data /usr/src/wordpress
 
 COPY common /etc/nginx/common
 COPY cache /etc/nginx/cache
