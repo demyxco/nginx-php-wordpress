@@ -1,0 +1,127 @@
+# nginx-php-wordpress
+[![Build Status](https://img.shields.io/travis/demyxco/nginx-php-wordpress?style=flat)](https://travis-ci.org/demyxco/nginx-php-wordpress)
+[![Docker Pulls](https://img.shields.io/docker/pulls/demyx/nginx-php-wordpress?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
+[![Docker Layers](https://img.shields.io/microbadger/layers/demyx/nginx-php-wordpress?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
+[![Docker Image Size](https://img.shields.io/microbadger/image-size/demyx/nginx-php-wordpress?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
+[![Architecture](https://img.shields.io/badge/linux-amd64-important?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
+[![Alpine](https://img.shields.io/badge/alpine-3.10.2-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
+[![NGINX](https://img.shields.io/badge/nginx-1.17.3-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
+[![PHP](https://img.shields.io/badge/php-7.3.8-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
+[![WordPress](https://img.shields.io/badge/wordpress-5.2.2-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
+
+Automatically installs wp-config.php using environment variables, configures salts, and enables HTTP_X_FORWARDED_PROTO. Image was built for: [github.com/demyxco](https://github.com/demyxco/demyx). 
+
+TITLE | DESCRIPTION
+--- | ---
+USER<br />GROUP | www-data (82)<br />www-data (82)
+WORKDIR | /var/www/html
+PORT | 80
+TIMEZONE | America/Los_Angeles
+PHP | /etc/php7/php.ini<br />/etc/php7/php-fpm.d/php-fpm.conf
+NGINX | /etc/nginx/nginx.conf<br />/etc/nginx/cache<br />/etc/nginx/common<br />/etc/nginx/modules<br />
+
+# Updates
+[![Code Size](https://img.shields.io/github/languages/code-size/demyxco/nginx-php-wordpress?style=flat&color=blue)](https://github.com/demyxco/nginx-php-wordpress)
+[![Repository Size](https://img.shields.io/github/repo-size/demyxco/nginx-php-wordpress?style=flat&color=blue)](https://github.com/demyxco/nginx-php-wordpress)
+[![Watches](https://img.shields.io/github/watchers/demyxco/nginx-php-wordpress?style=flat&color=blue)](https://github.com/demyxco/nginx-php-wordpress)
+[![Stars](https://img.shields.io/github/stars/demyxco/nginx-php-wordpress?style=flat&color=blue)](https://github.com/demyxco/nginx-php-wordpress)
+[![Forks](https://img.shields.io/github/forks/demyxco/nginx-php-wordpress?style=flat&color=blue)](https://github.com/demyxco/nginx-php-wordpress)
+
+* Auto built weekly on Sundays (America/Los_Angeles)
+* Rolling release updates
+
+# Usage
+This config requires no .toml for Traefik and is ready to go when running: 
+`docker-compose up -d`. If you want SSL, just remove the comments and make sure you have acme.json chmod to 600 (`touch acme.json; chmod 600 acme.json`) before mounting.
+
+```
+version: "3.7"
+
+services:
+  traefik:
+    image: traefik
+    container_name: demyx_traefik
+    restart: unless-stopped
+    command: 
+      - --api
+      - --api.statistics.recenterrors=100
+      - --docker
+      - --docker.watch=true
+      - --docker.exposedbydefault=false
+      - "--entrypoints=Name:http Address::80"
+      #- "--entrypoints=Name:https Address::443 TLS"
+      - --defaultentrypoints=http
+      #- --defaultentrypoints=http,https
+      #- --acme
+      #- --acme.email=info@domain.tld
+      #- --acme.storage=/etc/traefik/acme.json
+      #- --acme.entrypoint=https
+      #- --acme.onhostrule=true
+      #- --acme.httpchallenge.entrypoint=http
+      - --logLevel=INFO
+      - --accessLog.filePath=/etc/traefik/access.log
+      - --traefikLog.filePath=/etc/traefik/traefik.log
+    networks:
+      - demyx
+    ports:
+      - 80:80
+      #- 443:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      #- ./acme.json:/etc/traefik/acme.json # chmod 600
+    labels:
+      - "traefik.enable=true"
+      - "traefik.port=8080"
+      - "traefik.frontend.rule=Host:traefik.domain.tld"
+      #- "traefik.frontend.redirect.entryPoint=https"
+      #- "traefik.frontend.auth.basic.users=${DEMYX_STACK_AUTH}"
+      #- "traefik.frontend.headers.forceSTSHeader=true"
+      #- "traefik.frontend.headers.STSSeconds=315360000"
+      #- "traefik.frontend.headers.STSIncludeSubdomains=true"
+      #- "traefik.frontend.headers.STSPreload=true"  
+  db:
+    container_name: demyx_db
+    image: demyx/mariadb
+    restart: unless-stopped
+    networks:
+      - demyx
+    volumes:
+      - demyx_db:/var/lib/mysql
+    environment:
+      MARIADB_DATABASE: demyx_db
+      MARIADB_USERNAME: demyx_user
+      MARIADB_PASSWORD: demyx_password
+      MARIADB_ROOT_PASSWORD: demyx_root_password
+  wp:
+    container_name: demyx_wp
+    image: demyx/nginx-php-wordpress
+    restart: unless-stopped
+    networks:
+      - demyx
+    volumes:
+      - demyx_wp:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: demyx_db
+      WORDPRESS_DB_USER: demyx_user
+      WORDPRESS_DB_PASSWORD: demyx_password
+      TZ: America/Los_Angeles
+    labels:
+      - "traefik.enable=true"
+      - "traefik.port=80"
+      - "traefik.frontend.rule=Host:domain.tld"
+      #- "traefik.frontend.redirect.entryPoint=https"
+      #- "traefik.frontend.auth.basic.users=${DEMYX_STACK_AUTH}"
+      #- "traefik.frontend.headers.forceSTSHeader=true"
+      #- "traefik.frontend.headers.STSSeconds=315360000"
+      #- "traefik.frontend.headers.STSIncludeSubdomains=true"
+      #- "traefik.frontend.headers.STSPreload=true"  
+volumes:
+  demyx_wp:
+    name: demyx_wp
+  demyx_db:
+    name: demyx_db
+networks:
+  demyx:
+    name: demyx
+```
