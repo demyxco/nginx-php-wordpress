@@ -1,13 +1,12 @@
 # nginx-php-wordpress
 [![Build Status](https://img.shields.io/travis/demyxco/nginx-php-wordpress?style=flat)](https://travis-ci.org/demyxco/nginx-php-wordpress)
 [![Docker Pulls](https://img.shields.io/docker/pulls/demyx/nginx-php-wordpress?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
-[![Docker Layers](https://img.shields.io/microbadger/layers/demyx/nginx-php-wordpress?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
-[![Docker Image Size](https://img.shields.io/microbadger/image-size/demyx/nginx-php-wordpress?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
 [![Architecture](https://img.shields.io/badge/linux-amd64-important?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
 [![Alpine](https://img.shields.io/badge/alpine-3.10.2-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
 [![NGINX](https://img.shields.io/badge/nginx-1.17.3-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
-[![PHP](https://img.shields.io/badge/php-7.3.8-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
+[![PHP](https://img.shields.io/badge/php-7.3.9-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
 [![WordPress](https://img.shields.io/badge/wordpress-5.2.2-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
+[![Buy Me A Coffee](https://img.shields.io/badge/buy_me_coffee-$5-informational?style=flat&color=blue)](https://www.buymeacoffee.com/VXqkQK5tb)
 
 Automatically installs wp-config.php using environment variables, configures salts, and enables HTTP_X_FORWARDED_PROTO. Image was built for: [github.com/demyxco](https://github.com/demyxco/demyx). 
 
@@ -20,7 +19,7 @@ TIMEZONE | America/Los_Angeles
 PHP | /etc/php7/php.ini<br />/etc/php7/php-fpm.d/php-fpm.conf
 NGINX | /etc/nginx/nginx.conf<br />/etc/nginx/cache<br />/etc/nginx/common<br />/etc/nginx/modules<br />
 
-# Updates
+## Updates
 [![Code Size](https://img.shields.io/github/languages/code-size/demyxco/nginx-php-wordpress?style=flat&color=blue)](https://github.com/demyxco/nginx-php-wordpress)
 [![Repository Size](https://img.shields.io/github/repo-size/demyxco/nginx-php-wordpress?style=flat&color=blue)](https://github.com/demyxco/nginx-php-wordpress)
 [![Watches](https://img.shields.io/github/watchers/demyxco/nginx-php-wordpress?style=flat&color=blue)](https://github.com/demyxco/nginx-php-wordpress)
@@ -30,7 +29,51 @@ NGINX | /etc/nginx/nginx.conf<br />/etc/nginx/cache<br />/etc/nginx/common<br />
 * Auto built weekly on Sundays (America/Los_Angeles)
 * Rolling release updates
 
-# Usage
+## WordPress Container
+ENVIRONMENT | VARIABLE
+--- | ---
+WORDPRESS_DB_HOST | db
+WORDPRESS_DB_NAME | demyx_db
+WORDPRESS_DB_USER | demyx_user
+WORDPRESS_DB_PASSWORD | demyx_password
+TZ | America/Los_Angeles
+
+## MariaDB Container
+ENVIRONMENT | VARIABLE
+--- | ---
+MARIADB_BINLOG_FORMAT | mixed
+MARIADB_CHARACTER_SET_SERVER | utf8
+MARIADB_COLLATION_SERVER | utf8_general_ci
+MARIADB_DATABASE | # Optional
+MARIADB_DEFAULT_CHARACTER_SET | utf8
+MARIADB_INNODB_BUFFER_POOL_SIZE | 16M
+MARIADB_INNODB_DATA_FILE_PATH | ibdata1:10M:autoextend
+MARIADB_INNODB_FLUSH_LOG_AT_TRX_COMMIT | 1
+MARIADB_INNODB_LOCK_WAIT_TIMEOUT | 50
+MARIADB_INNODB_LOG_BUFFER_SIZE | 8M
+MARIADB_INNODB_LOG_FILE_SIZE | 5M
+MARIADB_INNODB_USE_NATIVE_AIO | 1
+MARIADB_KEY_BUFFER_SIZE | 16M
+MARIADB_KEY_BUFFER_SIZE | 20M
+MARIADB_LOG_BIN | mysql-bin
+MARIADB_MAX_ALLOWED_PACKET | 16M
+MARIADB_MAX_ALLOWED_PACKET | 1M
+MARIADB_MAX_CONNECTIONS | 151
+MARIADB_MYISAM_SORT_BUFFER_SIZE | 8M
+MARIADB_NET_BUFFER_SIZE | 8K
+MARIADB_PASSWORD | # Optional
+MARIADB_READ_BUFFER | 2M
+MARIADB_READ_BUFFER_SIZE | 256K
+MARIADB_READ_RND_BUFFER_SIZE | 512K
+MARIADB_ROOT_PASSWORD | # Required
+MARIADB_SERVER_ID | 1
+MARIADB_SORT_BUFFER_SIZE | 20M
+MARIADB_SORT_BUFFER_SIZE | 512K
+MARIADB_TABLE_OPEN_CACHE | 64
+MARIADB_USERNAME | # Optional
+MARIADB_WRITE_BUFFER | 2M
+
+## Usage
 This config requires no .toml for Traefik and is ready to go when running: 
 `docker-compose up -d`. If you want SSL, just remove the comments and make sure you have acme.json chmod to 600 (`touch acme.json; chmod 600 acme.json`) before mounting.
 
