@@ -197,7 +197,7 @@ RUN set -ex; \
 	php7-zlib
 
 RUN set -ex; \
-	apk add --no-cache ed dumb-init bash libsodium; \
+	apk add --no-cache ed dumb-init bash libsodium curl; \
     ln -s /usr/sbin/php-fpm7 /usr/local/bin/php-fpm; \
     mkdir -p /var/log/demyx
 

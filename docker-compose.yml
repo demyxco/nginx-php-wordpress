@@ -64,10 +64,16 @@ services:
     volumes:
       - demyx_wp:/var/www/html
     environment:
+      WORDPRESS_DOMAIN: domain.tld
       WORDPRESS_DB_HOST: db
       WORDPRESS_DB_NAME: demyx_db
       WORDPRESS_DB_USER: demyx_user
       WORDPRESS_DB_PASSWORD: demyx_password
+      DEMYX_UPLOAD_LIMIT: 128M
+      DEMYX_PHP_MEMORY: 256M
+      DEMYX_PHP_MAX_EXECUTION_TIME: 300
+      DEMYX_NGINX_CACHE: "false"
+      DEMYX_RATE_LIMIT: "false"
       TZ: America/Los_Angeles
     labels:
       - "traefik.enable=true"

@@ -4,7 +4,7 @@ if [[ ! -d /var/www/html/wp-admin ]]; then
 	echo "WordPress is missing, installing now."
 	cp -R /usr/src/wordpress/* /var/www/html
 
-	if [ "$WORDPRESS_DB_NAME" ] && [ "$WORDPRESS_DB_USER" ] && [ "$WORDPRESS_DB_PASSWORD" ] && [ "$WORDPRESS_DB_HOST" ]; then
+	if [[ "$WORDPRESS_DB_NAME" ]] && [[ "$WORDPRESS_DB_USER" ]] && [[ "$WORDPRESS_DB_PASSWORD" ]] && [[ "$WORDPRESS_DB_HOST" ]]; then
 		mv /var/www/html/wp-config-sample.php /var/www/html/wp-config.php
 		sed -i "s/database_name_here/$WORDPRESS_DB_NAME/g" /var/www/html/wp-config.php
 		sed -i "s/username_here/$WORDPRESS_DB_USER/g" /var/www/html/wp-config.php
@@ -16,13 +16,51 @@ if [[ ! -d /var/www/html/wp-admin ]]; then
 	fi
 fi
 
-if [[ -d /demyx ]]; then
-    rm /etc/nginx/nginx.conf
-    rm /etc/php7/php.ini
-    rm /etc/php7/php-fpm.d/www.conf
-    ln -s /demyx/nginx.conf /etc/nginx
-    ln -s /demyx/php.ini /etc/php7
-    ln -s /demyx/php-fpm.conf /etc/php7/php-fpm.d
+# Domain replacement
+if [[ -n "$WORDPRESS_DOMAIN" ]]; then
+	sed -i "s|demyx.|$WORDPRESS_DOMAIN.|g" /etc/nginx/nginx.conf
+	sed -i "s|demyx.error|$WORDPRESS_DOMAIN.error|g" /etc/php7/php-fpm.d/www.conf
+fi
+
+# Cloudflare check
+DEMYX_CLOUDFLARE_CHECK="$(curl -svo /dev/null "$WORDPRESS_DOMAIN" 2>&1 | grep "Server: cloudflare" || true)"
+if [[ -n "$DEMYX_CLOUDFLARE_CHECK" ]]; then
+	sed -i "s|#CF|real_ip_header CF-Connecting-IP; set_real_ip_from 0.0.0.0/0;|g" /etc/nginx/nginx.conf
+else
+	sed -i "s|#CF|real_ip_header X-Forwarded-For; set_real_ip_from 0.0.0.0/0;|g" /etc/nginx/nginx.conf
+fi
+
+# PHP/NGINX Upload limit
+if [[ -n "$DEMYX_UPLOAD_LIMIT" ]]; then
+	sed -i "s|client_max_body_size 128M|client_max_body_size $DEMYX_UPLOAD_LIMIT|g" /etc/nginx/nginx.conf
+	sed -i "s|post_max_size = 128M|post_max_size = $DEMYX_UPLOAD_LIMIT|g" /etc/php7/php.ini
+	sed -i "s|upload_max_filesize = 128M|upload_max_filesize = $DEMYX_UPLOAD_LIMIT|g" /etc/php7/php.ini
+fi
+
+# PHP max memory limit
+if [[ -n "$DEMYX_PHP_MEMORY" ]]; then
+	sed -i "s|memory_limit = 256M|memory_limit = $DEMYX_PHP_MEMORY|g" /etc/php7/php.ini
+fi
+
+# PHP max execution time
+if [[ -n "$DEMYX_PHP_MAX_EXECUTION_TIME" ]]; then
+	sed -i "s|max_execution_time = 300|max_execution_time = $DEMYX_PHP_MAX_EXECUTION_TIME|g" /etc/php7/php.ini
+fi
+
+# NGINX FastCGI cache
+if [[ "$DEMYX_NGINX_CACHE" = true ]]; then
+	sed -i "s|#include /etc/nginx/cache|include /etc/nginx/cache|g" /etc/nginx/nginx.conf
+fi
+
+# NGINX rate limiting
+if [[ "$DEMYX_RATE_LIMIT" = true ]]; then
+	sed -i "s|#limit_req|limit_req|g" /etc/nginx/nginx.conf
+fi
+
+# Basic auth
+if [[ -n "$DEMYX_BASIC_AUTH" ]]; then
+	echo "$DEMYX_BASIC_AUTH" > /.htpasswd
+	sed -i "s|#auth_basic|auth_basic|g" /etc/nginx/nginx.conf
 fi
 
 find /var/www/html -type d -print0 | xargs -0 chmod 0755

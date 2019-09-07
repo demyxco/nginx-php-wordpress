@@ -32,11 +32,22 @@ NGINX | /etc/nginx/nginx.conf<br />/etc/nginx/cache<br />/etc/nginx/common<br />
 ## WordPress Container
 ENVIRONMENT | VARIABLE
 --- | ---
+WORDPRESS_DOMAIN | domain.tld
 WORDPRESS_DB_HOST | db
 WORDPRESS_DB_NAME | demyx_db
 WORDPRESS_DB_USER | demyx_user
 WORDPRESS_DB_PASSWORD | demyx_password
+DEMYX_UPLOAD_LIMIT | 128M
+DEMYX_PHP_MEMORY | 256M
+DEMYX_PHP_MAX_EXECUTION_TIME | 300
+DEMYX_NGINX_CACHE | false
+DEMYX_RATE_LIMIT | false
+DEMYX_BASIC_AUTH | demyx:demyx<br />demyx:$$apr1$$EqJj89Yw$$WLsBIjCILtBGjHppQ76YT1
 TZ | America/Los_Angeles
+
+* Install the helper plugin [Nginx Helper](https://wordpress.org/plugins/nginx-helper/) if DEMYX_NGINX_CACHE is true
+* To generate htpasswd: `docker run -it --rm demyx/utilities "htpasswd -nb demyx demyx"`
+* DEMYX_BASIC_AUTH must have double dollar signs ($$)
 
 ## MariaDB Container
 ENVIRONMENT | VARIABLE
@@ -144,10 +155,17 @@ services:
     volumes:
       - demyx_wp:/var/www/html
     environment:
+      WORDPRESS_DOMAIN: domain.tld
       WORDPRESS_DB_HOST: db
       WORDPRESS_DB_NAME: demyx_db
       WORDPRESS_DB_USER: demyx_user
       WORDPRESS_DB_PASSWORD: demyx_password
+      DEMYX_UPLOAD_LIMIT: 128M
+      DEMYX_PHP_MEMORY: 256M
+      DEMYX_PHP_MAX_EXECUTION_TIME: 300
+      DEMYX_NGINX_CACHE: "false"
+      DEMYX_RATE_LIMIT: "false"
+      DEMYX_BASIC_AUTH: demyx:$$apr1$$EqJj89Yw$$WLsBIjCILtBGjHppQ76YT1
       TZ: America/Los_Angeles
     labels:
       - "traefik.enable=true"
