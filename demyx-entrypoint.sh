@@ -47,13 +47,19 @@ if [[ -n "$DEMYX_PHP_MAX_EXECUTION_TIME" ]]; then
 	sed -i "s|max_execution_time = 300|max_execution_time = $DEMYX_PHP_MAX_EXECUTION_TIME|g" /etc/php7/php.ini
 fi
 
+# PHP opcache
+if [[ "$DEMYX_PHP_OPCACHE" = off ]]; then
+	sed -i "s|opcache.enable=1|opcache.enable=0|g" /etc/php7/php.ini
+	sed -i "s|opcache.enable_cli=1|opcache.enable_cli=0|g" /etc/php7/php.ini
+fi
+
 # NGINX FastCGI cache
-if [[ "$DEMYX_NGINX_CACHE" = true ]]; then
+if [[ "$DEMYX_NGINX_CACHE" = on ]]; then
 	sed -i "s|#include /etc/nginx/cache|include /etc/nginx/cache|g" /etc/nginx/nginx.conf
 fi
 
 # NGINX rate limiting
-if [[ "$DEMYX_RATE_LIMIT" = true ]]; then
+if [[ "$DEMYX_RATE_LIMIT" = on ]]; then
 	sed -i "s|#limit_req|limit_req|g" /etc/nginx/nginx.conf
 fi
 

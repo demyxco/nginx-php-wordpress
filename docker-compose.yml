@@ -72,8 +72,9 @@ services:
       DEMYX_UPLOAD_LIMIT: 128M
       DEMYX_PHP_MEMORY: 256M
       DEMYX_PHP_MAX_EXECUTION_TIME: 300
-      DEMYX_NGINX_CACHE: "false"
-      DEMYX_RATE_LIMIT: "false"
+      DEMYX_PHP_OPCACHE: "on"
+      DEMYX_NGINX_CACHE: "off"
+      DEMYX_RATE_LIMIT: "off"
       TZ: America/Los_Angeles
     labels:
       - "traefik.enable=true"
