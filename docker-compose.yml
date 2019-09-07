@@ -75,6 +75,7 @@ services:
       DEMYX_PHP_OPCACHE: "on"
       DEMYX_NGINX_CACHE: "off"
       DEMYX_RATE_LIMIT: "off"
+      DEMYX_BASIC_AUTH: 
       TZ: America/Los_Angeles
     labels:
       - "traefik.enable=true"
