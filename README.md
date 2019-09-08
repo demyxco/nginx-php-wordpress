@@ -5,7 +5,7 @@
 [![Alpine](https://img.shields.io/badge/alpine-3.10.2-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
 [![NGINX](https://img.shields.io/badge/nginx-1.17.3-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
 [![PHP](https://img.shields.io/badge/php-7.3.9-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
-[![WordPress](https://img.shields.io/badge/wordpress-5.2.2-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
+[![WordPress](https://img.shields.io/badge/wordpress-5.2.3-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
 [![Buy Me A Coffee](https://img.shields.io/badge/buy_me_coffee-$5-informational?style=flat&color=blue)](https://www.buymeacoffee.com/VXqkQK5tb)
 
 Automatically installs wp-config.php using environment variables, configures salts, and enables HTTP_X_FORWARDED_PROTO. Image was built for: [github.com/demyxco](https://github.com/demyxco/demyx). 
@@ -36,7 +36,19 @@ WORDPRESS_DB_HOST | db
 WORDPRESS_DB_NAME | demyx_db
 WORDPRESS_DB_USER | demyx_user
 WORDPRESS_DB_PASSWORD | demyx_password
+WORDPRESS_DOMAIN | domain.tld
+WORDPRESS_UPLOAD_LIMIT | 128M
+WORDPRESS_PHP_MEMORY | 256M
+WORDPRESS_PHP_MAX_EXECUTION_TIME | 300
+WORDPRESS_PHP_OPCACHE | "on"
+WORDPRESS_NGINX_CACHE | "off"
+WORDPRESS_NGINX_RATE_LIMIT | "off"
+DEMYX_BASIC_AUTH | demyx:demyx<br />demyx:$$apr1$$EqJj89Yw$$WLsBIjCILtBGjHppQ76YT1
 TZ | America/Los_Angeles
+
+* Install the helper plugin [Nginx Helper](https://wordpress.org/plugins/nginx-helper/) if DEMYX_NGINX_CACHE is "on"
+* To generate htpasswd: `docker run -it --rm demyx/utilities "htpasswd -nb demyx demyx"`
+* DEMYX_BASIC_AUTH must have double dollar signs ($$)
 
 ## MariaDB Container
 ENVIRONMENT | VARIABLE
@@ -148,6 +160,14 @@ services:
       WORDPRESS_DB_NAME: demyx_db
       WORDPRESS_DB_USER: demyx_user
       WORDPRESS_DB_PASSWORD: demyx_password
+      WORDPRESS_DOMAIN: domain.tld
+      WORDPRESS_UPLOAD_LIMIT: 128M
+      WORDPRESS_PHP_MEMORY: 256M
+      WORDPRESS_PHP_MAX_EXECUTION_TIME: 300
+      WORDPRESS_PHP_OPCACHE: "on"
+      WORDPRESS_NGINX_CACHE: "off"
+      WORDPRESS_NGINX_RATE_LIMIT: "off"
+      WORDPRESS_NGINX_BASIC_AUTH: demyx:$$apr1$$EqJj89Yw$$WLsBIjCILtBGjHppQ76YT1
       TZ: America/Los_Angeles
     labels:
       - "traefik.enable=true"
