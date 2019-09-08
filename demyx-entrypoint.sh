@@ -23,49 +23,49 @@ if [[ -n "$WORDPRESS_DOMAIN" ]]; then
 fi
 
 # Cloudflare check
-DEMYX_CLOUDFLARE_CHECK="$(curl -svo /dev/null "$WORDPRESS_DOMAIN" 2>&1 | grep "Server: cloudflare" || true)"
-if [[ -n "$DEMYX_CLOUDFLARE_CHECK" ]]; then
+WORDPRESS_CLOUDFLARE_CHECK="$(curl -svo /dev/null "$WORDPRESS_DOMAIN" 2>&1 | grep "Server: cloudflare" || true)"
+if [[ -n "$WORDPRESS_CLOUDFLARE_CHECK" ]]; then
 	sed -i "s|#CF|real_ip_header CF-Connecting-IP; set_real_ip_from 0.0.0.0/0;|g" /etc/nginx/nginx.conf
 else
 	sed -i "s|#CF|real_ip_header X-Forwarded-For; set_real_ip_from 0.0.0.0/0;|g" /etc/nginx/nginx.conf
 fi
 
 # PHP/NGINX Upload limit
-if [[ -n "$DEMYX_UPLOAD_LIMIT" ]]; then
-	sed -i "s|client_max_body_size 128M|client_max_body_size $DEMYX_UPLOAD_LIMIT|g" /etc/nginx/nginx.conf
-	sed -i "s|post_max_size = 128M|post_max_size = $DEMYX_UPLOAD_LIMIT|g" /etc/php7/php.ini
-	sed -i "s|upload_max_filesize = 128M|upload_max_filesize = $DEMYX_UPLOAD_LIMIT|g" /etc/php7/php.ini
+if [[ -n "$WORDPRESS_UPLOAD_LIMIT" ]]; then
+	sed -i "s|client_max_body_size 128M|client_max_body_size $WORDPRESS_UPLOAD_LIMIT|g" /etc/nginx/nginx.conf
+	sed -i "s|post_max_size = 128M|post_max_size = $WORDPRESS_UPLOAD_LIMIT|g" /etc/php7/php.ini
+	sed -i "s|upload_max_filesize = 128M|upload_max_filesize = $WORDPRESS_UPLOAD_LIMIT|g" /etc/php7/php.ini
 fi
 
 # PHP max memory limit
-if [[ -n "$DEMYX_PHP_MEMORY" ]]; then
-	sed -i "s|memory_limit = 256M|memory_limit = $DEMYX_PHP_MEMORY|g" /etc/php7/php.ini
+if [[ -n "$WORDPRESS_PHP_MEMORY" ]]; then
+	sed -i "s|memory_limit = 256M|memory_limit = $WORDPRESS_PHP_MEMORY|g" /etc/php7/php.ini
 fi
 
 # PHP max execution time
-if [[ -n "$DEMYX_PHP_MAX_EXECUTION_TIME" ]]; then
-	sed -i "s|max_execution_time = 300|max_execution_time = $DEMYX_PHP_MAX_EXECUTION_TIME|g" /etc/php7/php.ini
+if [[ -n "$WORDPRESS_PHP_MAX_EXECUTION_TIME" ]]; then
+	sed -i "s|max_execution_time = 300|max_execution_time = $WORDPRESS_PHP_MAX_EXECUTION_TIME|g" /etc/php7/php.ini
 fi
 
 # PHP opcache
-if [[ "$DEMYX_PHP_OPCACHE" = off ]]; then
+if [[ "$WORDPRESS_PHP_OPCACHE" = off ]]; then
 	sed -i "s|opcache.enable=1|opcache.enable=0|g" /etc/php7/php.ini
 	sed -i "s|opcache.enable_cli=1|opcache.enable_cli=0|g" /etc/php7/php.ini
 fi
 
 # NGINX FastCGI cache
-if [[ "$DEMYX_NGINX_CACHE" = on ]]; then
+if [[ "$WORDPRESS_NGINX_CACHE" = on ]]; then
 	sed -i "s|#include /etc/nginx/cache|include /etc/nginx/cache|g" /etc/nginx/nginx.conf
 fi
 
 # NGINX rate limiting
-if [[ "$DEMYX_RATE_LIMIT" = on ]]; then
+if [[ "$WORDPRESS_NGINX_RATE_LIMIT" = on ]]; then
 	sed -i "s|#limit_req|limit_req|g" /etc/nginx/nginx.conf
 fi
 
 # Basic auth
-if [[ -n "$DEMYX_BASIC_AUTH" ]]; then
-	echo "$DEMYX_BASIC_AUTH" > /.htpasswd
+if [[ -n "$WORDPRESS_NGINX_BASIC_AUTH" ]]; then
+	echo "$WORDPRESS_NGINX_BASIC_AUTH" > /.htpasswd
 	sed -i "s|#auth_basic|auth_basic|g" /etc/nginx/nginx.conf
 fi
 
