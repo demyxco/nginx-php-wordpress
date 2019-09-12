@@ -43,7 +43,7 @@ WORDPRESS_PHP_MAX_EXECUTION_TIME | 300
 WORDPRESS_PHP_OPCACHE | "on"
 WORDPRESS_NGINX_CACHE | "off"
 WORDPRESS_NGINX_RATE_LIMIT | "off"
-DEMYX_BASIC_AUTH | demyx:demyx<br />demyx:$$apr1$$EqJj89Yw$$WLsBIjCILtBGjHppQ76YT1
+WORDPRESS_NGINX_BASIC_AUTH | demyx:demyx<br />demyx:$$apr1$$EqJj89Yw$$WLsBIjCILtBGjHppQ76YT1
 TZ | America/Los_Angeles
 
 * Install the helper plugin [Nginx Helper](https://wordpress.org/plugins/nginx-helper/) if DEMYX_NGINX_CACHE is "on"
