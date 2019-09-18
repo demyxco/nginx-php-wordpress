@@ -64,7 +64,7 @@ if [[ "$WORDPRESS_NGINX_RATE_LIMIT" = on ]]; then
 fi
 
 # Basic auth
-if [[ -n "$WORDPRESS_NGINX_BASIC_AUTH" ]]; then
+if [[ "$WORDPRESS_NGINX_BASIC_AUTH" != off ]]; then
 	echo "$WORDPRESS_NGINX_BASIC_AUTH" > /.htpasswd
 	sed -i "s|#auth_basic|auth_basic|g" /etc/nginx/nginx.conf
 fi
