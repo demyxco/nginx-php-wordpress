@@ -102,7 +102,6 @@ services:
       - WORDPRESS_NGINX_RATE_LIMIT=off
       - WORDPRESS_NGINX_BASIC_AUTH=demyx:$$apr1$$EqJj89Yw$$WLsBIjCILtBGjHppQ76YT1
       - TZ=America/Los_Angeles
-      TZ: America/Los_Angeles
     labels:
       - "traefik.enable=true"
       - "traefik.port=80"
