@@ -160,9 +160,10 @@ RUN set -x; \
 # END BUILD CUSTOM MODULES
 #
 
+# Install PHP and friends
 RUN set -ex; \
     adduser -u 82 -D -S -G  www-data www-data; \
-    apk add --no-cache php7 \
+    apk add --no-cache php7 libsodium \
     php7-bcmath \
     php7-ctype \
 	php7-curl \
@@ -194,32 +195,43 @@ RUN set -ex; \
 	php7-xmlreader \
     php7-xmlwriter \
     php7-zip \
-	php7-zlib
+	php7-zlib; \
+    ln -s /usr/sbin/php-fpm7 /usr/local/bin/php-fpm
 
+# Custom packages and miscellaneous
 RUN set -ex; \
-	apk add --no-cache ed dumb-init bash libsodium curl; \
-    ln -s /usr/sbin/php-fpm7 /usr/local/bin/php-fpm; \
+	apk add --no-cache ed bash curl; \
     mkdir -p /var/log/demyx
 
+# s6 overlay
 RUN set -ex; \
-    mkdir -p /var/www/html; \
-	wget https://wordpress.org/latest.tar.gz -qO /usr/src/latest.tar.gz; \
-	tar -xzf /usr/src/latest.tar.gz -C /usr/src; \
-	rm /usr/src/latest.tar.gz; \
-	chown -R www-data:www-data /usr/src/wordpress
+    export DEMYX_S6_VERSION=$(curl -sL https://api.github.com/repos/just-containers/s6-overlay/releases/latest | grep '"name"' | head -n1 | awk -F '[:]' '{print $2}' | sed -e 's/"//g' | sed -e 's/,//g' | sed -e 's/ //g' | sed -e 's/\r//g'); \
+    wget https://github.com/just-containers/s6-overlay/releases/download/${DEMYX_S6_VERSION}/s6-overlay-amd64.tar.gz -qO /tmp/s6-overlay-amd64.tar.gz; \
+    tar xzf /tmp/s6-overlay-amd64.tar.gz -C /; \
+    rm -rf /tmp/*
 
+# Copy core files
 COPY common /etc/nginx/common
 COPY cache /etc/nginx/cache
-COPY demyx-entrypoint.sh /usr/local/bin/demyx-entrypoint
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY php.ini /etc/php7/php.ini
 COPY www.conf /etc/php7/php-fpm.d/www.conf
 COPY docker.conf /etc/php7/php-fpm.d/docker.conf
+COPY s6-overlay/00-init /etc/cont-init.d/00-init
+COPY s6-overlay/00-www-data /etc/fix-attrs.d/00-www-data
+COPY s6-overlay/run-php-fpm /etc/services.d/php-fpm/run
+COPY s6-overlay/run-nginx /etc/services.d/nginx/run
 
-RUN chmod +x /usr/local/bin/demyx-entrypoint
+# WordPress
+RUN set -ex; \
+    mkdir -p /var/www/html; \
+	wget https://wordpress.org/latest.tar.gz -qO /usr/src/latest.tar.gz; \
+	tar -xzf /usr/src/latest.tar.gz -C /usr/src; \
+	rm /usr/src/latest.tar.gz
 
 EXPOSE 80
+EXPOSE 9000
 
 WORKDIR /var/www/html
 
-ENTRYPOINT ["dumb-init", "demyx-entrypoint"]
+ENTRYPOINT ["/init"]
