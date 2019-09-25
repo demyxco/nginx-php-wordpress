@@ -1,7 +1,7 @@
 #!/bin/bash
 # Demyx
 # https://demyx.sh
-# Original script: https://github.com/peter-evans/dockerhub-description/blob/master/entrypoint.sh
+# https://github.com/peter-evans/dockerhub-description/blob/master/entrypoint.sh
 set -euo pipefail
 IFS=$'\n\t'
 
