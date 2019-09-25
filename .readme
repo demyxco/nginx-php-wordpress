@@ -31,6 +31,10 @@ NGINX | /etc/nginx/nginx.conf<br />/etc/nginx/cache<br />/etc/nginx/common<br />
 * For support: [#demyx](https://webchat.freenode.net/?channel=#demyx)
 
 ## WordPress Container
+* Install the helper plugin [Nginx Helper](https://wordpress.org/plugins/nginx-helper/) if DEMYX_NGINX_CACHE is "on"
+* To generate htpasswd: `docker run -it --rm demyx/utilities "htpasswd -nb demyx demyx"`
+* WORDPRESS_NGINX_BASIC_AUTH must have double dollar signs ($$)
+
 ENVIRONMENT | VARIABLE
 --- | ---
 WORDPRESS_DB_HOST | db
@@ -41,15 +45,11 @@ WORDPRESS_DOMAIN | domain.tld
 WORDPRESS_UPLOAD_LIMIT | 128M
 WORDPRESS_PHP_MEMORY | 256M
 WORDPRESS_PHP_MAX_EXECUTION_TIME | 300
-WORDPRESS_PHP_OPCACHE | "on"
-WORDPRESS_NGINX_CACHE | "off"
-WORDPRESS_NGINX_RATE_LIMIT | "off"
-WORDPRESS_NGINX_BASIC_AUTH | demyx:demyx<br />demyx:$$apr1$$EqJj89Yw$$WLsBIjCILtBGjHppQ76YT1
+WORDPRESS_PHP_OPCACHE | on
+WORDPRESS_NGINX_CACHE | off
+WORDPRESS_NGINX_RATE_LIMIT | off
+WORDPRESS_NGINX_BASIC_AUTH | demyx:$$apr1$$EqJj89Yw$$WLsBIjCILtBGjHppQ76YT1<br />(demyx:demyx)
 TZ | America/Los_Angeles
-
-* Install the helper plugin [Nginx Helper](https://wordpress.org/plugins/nginx-helper/) if DEMYX_NGINX_CACHE is "on"
-* To generate htpasswd: `docker run -it --rm demyx/utilities "htpasswd -nb demyx demyx"`
-* WORDPRESS_NGINX_BASIC_AUTH must have double dollar signs ($$)
 
 ## MariaDB Container
 ENVIRONMENT | VARIABLE
@@ -82,6 +82,7 @@ MARIADB_SORT_BUFFER_SIZE | 20M
 MARIADB_TABLE_OPEN_CACHE | 64
 MARIADB_USERNAME | # Optional
 MARIADB_WRITE_BUFFER | 2M
+TZ | America/Los_Angeles
 
 ## Usage
 This config requires no .toml for Traefik and is ready to go when running: `docker-compose up -d`. 
