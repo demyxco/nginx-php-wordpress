@@ -14,7 +14,8 @@ TITLE | DESCRIPTION
 --- | ---
 USER<br />GROUP | www-data (82)<br />www-data (82)
 WORKDIR | /var/www/html
-PORT | 80
+PORT | 80 9000
+ENTRYPOINT | s6-overlay
 TIMEZONE | America/Los_Angeles
 PHP | /etc/php7/php.ini<br />/etc/php7/php-fpm.d/php-fpm.conf
 NGINX | /etc/nginx/nginx.conf<br />/etc/nginx/cache<br />/etc/nginx/common<br />/etc/nginx/modules<br />
@@ -31,6 +32,10 @@ NGINX | /etc/nginx/nginx.conf<br />/etc/nginx/cache<br />/etc/nginx/common<br />
 * For support: [#demyx](https://webchat.freenode.net/?channel=#demyx)
 
 ## WordPress Container
+* Install the helper plugin [Nginx Helper](https://wordpress.org/plugins/nginx-helper/) if WORDPRESS_NGINX_CACHE is on
+* To generate htpasswd: `docker run -it --rm demyx/utilities "htpasswd -nb demyx demyx"`
+* WORDPRESS_NGINX_BASIC_AUTH must have double dollar signs ($$)
+
 ENVIRONMENT | VARIABLE
 --- | ---
 WORDPRESS_DB_HOST | db
@@ -41,15 +46,11 @@ WORDPRESS_DOMAIN | domain.tld
 WORDPRESS_UPLOAD_LIMIT | 128M
 WORDPRESS_PHP_MEMORY | 256M
 WORDPRESS_PHP_MAX_EXECUTION_TIME | 300
-WORDPRESS_PHP_OPCACHE | "on"
-WORDPRESS_NGINX_CACHE | "off"
-WORDPRESS_NGINX_RATE_LIMIT | "off"
-WORDPRESS_NGINX_BASIC_AUTH | demyx:demyx<br />demyx:$$apr1$$EqJj89Yw$$WLsBIjCILtBGjHppQ76YT1
+WORDPRESS_PHP_OPCACHE | on
+WORDPRESS_NGINX_CACHE | off
+WORDPRESS_NGINX_RATE_LIMIT | off
+WORDPRESS_NGINX_BASIC_AUTH | demyx:$$apr1$$EqJj89Yw$$WLsBIjCILtBGjHppQ76YT1<br />(demyx:demyx)
 TZ | America/Los_Angeles
-
-* Install the helper plugin [Nginx Helper](https://wordpress.org/plugins/nginx-helper/) if DEMYX_NGINX_CACHE is "on"
-* To generate htpasswd: `docker run -it --rm demyx/utilities "htpasswd -nb demyx demyx"`
-* DEMYX_BASIC_AUTH must have double dollar signs ($$)
 
 ## MariaDB Container
 ENVIRONMENT | VARIABLE
@@ -82,41 +83,20 @@ MARIADB_SORT_BUFFER_SIZE | 20M
 MARIADB_TABLE_OPEN_CACHE | 64
 MARIADB_USERNAME | # Optional
 MARIADB_WRITE_BUFFER | 2M
+TZ | America/Los_Angeles
 
 ## Usage
-This config requires no .toml for Traefik and is ready to go when running: `docker-compose up -d`. 
-
-SSL/TLS
-* Remove the comments (#)
-* `docker run -t --rm -v demyx_traefik:/demyx demyx/utilities "touch /demyx/acme.json; chmod 600 /demyx/acme.json"`
+* Requires no config file for Traefik and is ready to go when running: `docker-compose up -d`
+* For SSL/TLS, just remove the comments (#)
+* Upgrading from Traefik v1 to v2? You will need to convert your [acme.json](https://github.com/containous/traefik-migration-tool)
 
 ```
 version: "3.7"
-
 services:
   traefik:
-    image: traefik:v1.7.16
+    image: traefik
     container_name: demyx_traefik
     restart: unless-stopped
-    command: 
-      - --api
-      - --api.statistics.recenterrors=100
-      - --docker
-      - --docker.watch=true
-      - --docker.exposedbydefault=false
-      - "--entrypoints=Name:http Address::80"
-      #- "--entrypoints=Name:https Address::443 TLS"
-      - --defaultentrypoints=http
-      #- --defaultentrypoints=http,https
-      #- --acme
-      #- --acme.email=info@domain.tld
-      #- --acme.storage=/demyx/acme.json
-      #- --acme.entrypoint=https
-      #- --acme.onhostrule=true
-      #- --acme.httpchallenge.entrypoint=http
-      - --logLevel=INFO
-      - --accessLog.filePath=/demyx/access.log
-      - --traefikLog.filePath=/demyx/traefik.log
     networks:
       - demyx
     ports:
@@ -124,17 +104,36 @@ services:
       #- 443:443
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      #- demyx_traefik:/demyx/acme.json
+      - demyx_traefik:/demyx
+    environment:
+      - TRAEFIK_API=true
+      - TRAEFIK_PROVIDERS_DOCKER=true
+      - TRAEFIK_PROVIDERS_DOCKER_EXPOSEDBYDEFAULT=false
+      - TRAEFIK_ENTRYPOINTS_HTTP_ADDRESS=:80
+      #- TRAEFIK_ENTRYPOINTS_HTTPS_ADDRESS=:443
+      #- TRAEFIK_CERTIFICATESRESOLVERS_DEMYX_ACME_HTTPCHALLENGE=true
+      #- TRAEFIK_CERTIFICATESRESOLVERS_DEMYX_ACME_HTTPCHALLENGE_ENTRYPOINT=http
+      #- TRAEFIK_CERTIFICATESRESOLVERS_DEMYX_ACME_EMAIL=info@domain.tld
+      #- TRAEFIK_CERTIFICATESRESOLVERS_DEMYX_ACME_STORAGE=/demyx/acme.json
+      - TRAEFIK_LOG=true
+      - TRAEFIK_LOG_LEVEL=INFO
+      - TRAEFIK_LOG_FILEPATH=/demyx/error.log
+      - TRAEFIK_ACCESSLOG=true
+      - TRAEFIK_ACCESSLOG_FILEPATH=/demyx/access.log
+      - TZ=America/Los_Angeles
     labels:
       - "traefik.enable=true"
-      - "traefik.port=8080"
-      - "traefik.frontend.rule=Host:traefik.domain.tld"
-      #- "traefik.frontend.redirect.entryPoint=https"
-      #- "traefik.frontend.auth.basic.users=${DEMYX_STACK_AUTH}"
-      #- "traefik.frontend.headers.forceSTSHeader=true"
-      #- "traefik.frontend.headers.STSSeconds=315360000"
-      #- "traefik.frontend.headers.STSIncludeSubdomains=true"
-      #- "traefik.frontend.headers.STSPreload=true"
+      - "traefik.http.routers.traefik-http.rule=Host(`traefik.domain.tld`)"
+      - "traefik.http.routers.traefik-http.service=api@internal"
+      - "traefik.http.routers.traefik-http.entrypoints=http"
+      #- "traefik.http.routers.traefik-http.middlewares=traefik-redirect"
+      #- "traefik.http.routers.traefik-https.rule=Host(`traefik.domain.tld`)"
+      #- "traefik.http.routers.traefik-https.entrypoints=https"
+      #- "traefik.http.routers.traefik-https.service=api@internal"
+      #- "traefik.http.routers.traefik-https.tls.certresolver=demyx"
+      #- "traefik.http.routers.traefik-https.middlewares=traefik-auth"
+      #- "traefik.http.middlewares.traefik-auth.basicauth.users=demyx:$$apr1$$EqJj89Yw$$WLsBIjCILtBGjHppQ76YT1"
+      #- "traefik.http.middlewares.traefik-redirect.redirectscheme.scheme=https"
   db:
     container_name: demyx_db
     image: demyx/mariadb
@@ -181,6 +180,7 @@ services:
       - demyx
     volumes:
       - demyx_wp:/var/www/html
+      - demyx_wp_log:/var/log/demyx
     environment:
       - WORDPRESS_DB_HOST=db
       - WORDPRESS_DB_NAME=demyx_db
@@ -197,17 +197,18 @@ services:
       - TZ=America/Los_Angeles
     labels:
       - "traefik.enable=true"
-      - "traefik.port=80"
-      - "traefik.frontend.rule=Host:domain.tld"
-      #- "traefik.frontend.redirect.entryPoint=https"
-      #- "traefik.frontend.auth.basic.users=${DEMYX_STACK_AUTH}"
-      #- "traefik.frontend.headers.forceSTSHeader=true"
-      #- "traefik.frontend.headers.STSSeconds=315360000"
-      #- "traefik.frontend.headers.STSIncludeSubdomains=true"
-      #- "traefik.frontend.headers.STSPreload=true"  
+      - "traefik.http.routers.domaintld-http.rule=Host(`domain.tld`) || Host(`www.domain.tld`)"
+      - "traefik.http.routers.domaintld-http.entrypoints=http"
+      #- "traefik.http.routers.domaintld-http.middlewares=domaintld-redirect"
+      #- "traefik.http.routers.domaintld-https.rule=Host(`domain.tld`) || Host(`www.domain.tld`)"
+      #- "traefik.http.routers.domaintld-https.entrypoints=https"
+      #- "traefik.http.routers.domaintld-https.tls.certresolver=demyx"
+      #- "traefik.http.middlewares.domaintld-redirect.redirectscheme.scheme=https"
 volumes:
   demyx_wp:
     name: demyx_wp
+  demyx_wp_log:
+    name: demyx_wp_log
   demyx_db:
     name: demyx_db
   demyx_traefik:
