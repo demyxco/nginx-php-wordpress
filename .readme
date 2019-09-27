@@ -89,6 +89,7 @@ TZ | America/Los_Angeles
 * Requires no config file for Traefik and is ready to go when running: `docker-compose up -d`
 * For SSL/TLS, just remove the comments (#)
 * Upgrading from Traefik v1 to v2? You will need to convert your [acme.json](https://github.com/containous/traefik-migration-tool)
+
 ```
 version: "3.7"
 services:
