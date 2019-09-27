@@ -229,8 +229,7 @@ RUN set -ex; \
 	tar -xzf /usr/src/latest.tar.gz -C /usr/src; \
 	rm /usr/src/latest.tar.gz
 
-EXPOSE 80
-EXPOSE 9000
+EXPOSE 80 9000
 
 WORKDIR /var/www/html
 
