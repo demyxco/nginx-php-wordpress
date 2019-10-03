@@ -70,7 +70,12 @@ if [[ "$WORDPRESS_NGINX_RATE_LIMIT" = on ]]; then
 	sed -i "s|#limit_req|limit_req|g" /etc/nginx/nginx.conf
 fi
 
-# Basic auth
+# NGINX xmlrpc.php
+if [[ "$WORDPRESS_NGINX_XMLRPC" = on ]]; then
+	mv /etc/nginx/common/xmlrpc.conf /etc/nginx/common/xmlrpc.on
+fi
+
+# NGINX Basic auth
 if [[ "$WORDPRESS_NGINX_BASIC_AUTH" != off ]]; then
 	echo "$WORDPRESS_NGINX_BASIC_AUTH" > /.htpasswd
 	sed -i "s|#auth_basic|auth_basic|g" /etc/nginx/nginx.conf

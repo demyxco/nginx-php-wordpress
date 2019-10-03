@@ -103,6 +103,7 @@ services:
       - WORDPRESS_PHP_OPCACHE=on
       - WORDPRESS_NGINX_CACHE=off
       - WORDPRESS_NGINX_RATE_LIMIT=off
+      - WORDPRESS_NGINX_XMLRPC=off
       - WORDPRESS_NGINX_BASIC_AUTH=demyx:$$apr1$$EqJj89Yw$$WLsBIjCILtBGjHppQ76YT1
       - TZ=America/Los_Angeles
     labels:
