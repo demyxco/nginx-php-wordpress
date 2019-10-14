@@ -76,7 +76,7 @@ if [[ "$WORDPRESS_NGINX_XMLRPC" = on ]] || [[ "$WORDPRESS_NGINX_XMLRPC" = true ]
 fi
 
 # NGINX Basic auth
-if [[ "$WORDPRESS_NGINX_BASIC_AUTH" != off ]] || [[ "$WORDPRESS_NGINX_BASIC_AUTH" != false ]]; then
+if [[ "$WORDPRESS_NGINX_BASIC_AUTH" = on ]] || [[ "$WORDPRESS_NGINX_BASIC_AUTH" = true ]]; then
 	echo "$WORDPRESS_NGINX_BASIC_AUTH" > /.htpasswd
 	sed -i "s|#auth_basic|auth_basic|g" /etc/nginx/nginx.conf
 fi
