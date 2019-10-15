@@ -10,8 +10,9 @@
 
 Automatically installs wp-config.php using environment variables, configures salts, and enables HTTP_X_FORWARDED_PROTO. Image was built for: [github.com/demyxco](https://github.com/demyxco/demyx). 
 
-TITLE | DESCRIPTION
+DEMYX | NGINX-PHP-WORDPRESS
 --- | ---
+TAGS | latest bedrock
 USER<br />GROUP | www-data (82)<br />www-data (82)
 WORKDIR | /var/www/html
 PORT | 80 9000
