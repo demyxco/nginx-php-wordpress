@@ -6,7 +6,7 @@ if [[ ! -d /var/www/html/wp-admin ]]; then
 	echo "WordPress is missing, installing now."
 	cp -r /usr/src/wordpress/* /var/www/html
 
-	if [[ "$WORDPRESS_DB_NAME" ]] && [[ "$WORDPRESS_DB_USER" ]] && [[ "$WORDPRESS_DB_PASSWORD" ]] && [[ "$WORDPRESS_DB_HOST" ]]; then
+	if [[ "$WORDPRESS_DB_NAME" && "$WORDPRESS_DB_USER" && "$WORDPRESS_DB_PASSWORD" && "$WORDPRESS_DB_HOST" ]]; then
 		mv /var/www/html/wp-config-sample.php /var/www/html/wp-config.php
 		sed -i "s/database_name_here/$WORDPRESS_DB_NAME/g" /var/www/html/wp-config.php
 		sed -i "s/username_here/$WORDPRESS_DB_USER/g" /var/www/html/wp-config.php
