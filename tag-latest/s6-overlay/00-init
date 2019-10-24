@@ -68,6 +68,7 @@ fi
 # NGINX rate limiting
 if [[ "$WORDPRESS_NGINX_RATE_LIMIT" = on || "$WORDPRESS_NGINX_RATE_LIMIT" = true ]]; then
 	sed -i "s|#limit_req|limit_req|g" /etc/nginx/nginx.conf
+	sed -i "s|#limit_conn|limit_conn|g" /etc/nginx/nginx.conf
 fi
 
 # NGINX xmlrpc.php
