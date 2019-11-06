@@ -12,17 +12,21 @@ RUN set -ex; \
     composer \
     git
 
-# Bedrock
+# Install Bedrock
 RUN set -ex; \
     su -c 'composer create-project roots/bedrock /tmp/bedrock; composer clearcache' -s /bin/sh www-data; \
     tar -czf /usr/src/bedrock.tgz -C /tmp/bedrock .; \
     rm -rf /usr/src/wordpress; \
-    rm -rf /tmp/*; \
-    \
-    echo -e '# Prevent PHP scripts from being executed inside the uploads folder.\nlocation ~* /app/uploads/.*.php\$ {\n    deny all;\n}\nlocation ~* .(blade.php)$ {\n     deny all;\n}' > /etc/nginx/common/bedrock.conf; \
-    sed -i "s|/var/www/html|/var/www/html/web|g" /etc/nginx/nginx.conf
+    rm -rf /tmp/*
+
+# Modify nginx configs
+RUN set -ex; \
+    sed -i "s|/var/www/html|/var/www/html/web|g" /etc/nginx/nginx.conf; \
+    sed -i "s|#bedrock|include /etc/nginx/bedrock.conf;|g" /etc/nginx/nginx.conf; \
+    sed -i "s|/wp-login.php|/wp/wp-login.php|g" /etc/nginx/common/wpcommon.conf
 
 COPY 00-init /etc/cont-init.d/00-init
+COPY bedrock.conf /etc/nginx/bedrock.conf
 
 EXPOSE 80 9000
 
