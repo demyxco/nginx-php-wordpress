@@ -5,7 +5,7 @@
 [![Alpine](https://img.shields.io/badge/alpine-3.10.3-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
 [![NGINX](https://img.shields.io/badge/nginx-1.17.6-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
 [![PHP](https://img.shields.io/badge/php-7.3.11-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
-[![WordPress](https://img.shields.io/badge/wordpress-5.3-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
+[![WordPress](https://img.shields.io/badge/wordpress-5.3.1-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
 [![Buy Me A Coffee](https://img.shields.io/badge/buy_me_coffee-$5-informational?style=flat&color=blue)](https://www.buymeacoffee.com/VXqkQK5tb)
 
 Automatically installs wp-config.php using environment variables, configures salts, and enables HTTP_X_FORWARDED_PROTO. Image was built for: [github.com/demyxco](https://github.com/demyxco/demyx). 
