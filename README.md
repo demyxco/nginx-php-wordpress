@@ -5,7 +5,7 @@
 [![Alpine](https://img.shields.io/badge/alpine-3.11.6-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
 [![NGINX](https://img.shields.io/badge/nginx-1.17.10-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
 [![PHP](https://img.shields.io/badge/php-7.3.17-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
-[![WordPress](https://img.shields.io/badge/wordpress-5.4-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
+[![WordPress](https://img.shields.io/badge/wordpress-5.4.1-informational?style=flat&color=blue)](https://hub.docker.com/r/demyx/nginx-php-wordpress)
 [![Buy Me A Coffee](https://img.shields.io/badge/buy_me_coffee-$5-informational?style=flat&color=blue)](https://www.buymeacoffee.com/VXqkQK5tb)
 [![Become a Patron!](https://img.shields.io/badge/become%20a%20patron-$5-informational?style=flat&color=blue)](https://www.patreon.com/bePatron?u=23406156)
 
