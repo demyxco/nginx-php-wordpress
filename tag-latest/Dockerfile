@@ -9,11 +9,14 @@ LABEL sh.demyx.registry https://hub.docker.com/u/demyx
 ENV TZ America/Los_Angeles
 
 RUN set -x \
+# Auto populate these variables from upstream's Dockerfile
+    && NGINX_DOCKERFILE="$(wget -qO- https://raw.githubusercontent.com/nginxinc/docker-nginx/master/mainline/alpine/Dockerfile)" \
+    && NGINX_ALPINE="$(echo "$NGINX_DOCKERFILE" | grep 'FROM' | awk -F '[:]' '{print $2}')" \
+    && NGINX_VERSION="$(echo "$NGINX_DOCKERFILE" | grep 'ENV NGINX_VERSION' | cut -c 19-)" \
+    && NJS_VERSION="$(echo "$NGINX_DOCKERFILE" | grep 'ENV NJS_VERSION' | cut -c 19-)" \
+    && PKG_RELEASE="$(echo "$NGINX_DOCKERFILE" | grep 'ENV PKG_RELEASE' | cut -c 19-)" \
+    && KEY_SHA512="$(echo "$NGINX_DOCKERFILE" | grep 'KEY_SHA512=' | sed 's|\\||g' | sed 's|\"||g' | sed 's|stdin |stdin|g' | awk -F '[=]' '{print $2}')" \
 # create nginx user/group first, to be consistent throughout docker variants
-    && export NGINX_MAINLINE_DOCKERFILE="$(wget -qO- https://raw.githubusercontent.com/nginxinc/docker-nginx/master/mainline/alpine/Dockerfile)" \
-    && export NGINX_VERSION="$(echo "$NGINX_MAINLINE_DOCKERFILE" | grep 'ENV NGINX_VERSION' | cut -c 19-)" \
-    && export NJS_VERSION="$(echo "$NGINX_MAINLINE_DOCKERFILE" | grep 'ENV NJS_VERSION' | cut -c 19-)" \
-    && export PKG_RELEASE="$(echo "$NGINX_MAINLINE_DOCKERFILE" | grep 'ENV PKG_RELEASE' | cut -c 19-)" \
     && addgroup -g 101 -S nginx \
     && adduser -S -D -H -u 101 -h /var/cache/nginx -s /sbin/nologin -G nginx -g nginx nginx \
     && apkArch="$(cat /etc/apk/arch)" \
@@ -28,23 +31,18 @@ RUN set -x \
         x86_64) \
 # arches officially built by upstream
             set -x \
-            && KEY_SHA512="e7fa8303923d9b95db37a77ad46c68fd4755ff935d0a534d26eba83de193c76166c68bfe7f65471bf8881004ef4aa6df3e34689c305662750c0172fca5d8552a *stdin" \
             && apk add --no-cache --virtual .cert-deps \
-                openssl curl ca-certificates \
-            && curl -o /tmp/nginx_signing.rsa.pub https://nginx.org/keys/nginx_signing.rsa.pub \
+                openssl \
+            && wget -O /tmp/nginx_signing.rsa.pub https://nginx.org/keys/nginx_signing.rsa.pub \
             && if [ "$(openssl rsa -pubin -in /tmp/nginx_signing.rsa.pub -text -noout | openssl sha512 -r)" = "$KEY_SHA512" ]; then \
-                 echo "key verification succeeded!"; \
-                 mv /tmp/nginx_signing.rsa.pub /etc/apk/keys/; \
-               else \
-                 echo "key verification failed!"; \
-                 exit 1; \
-               fi \
-            && printf "%s%s%s\n" \
-                "https://nginx.org/packages/mainline/alpine/v" \
-                `egrep -o '^[0-9]+\.[0-9]+' /etc/alpine-release` \
-                "/main" \
-            | tee -a /etc/apk/repositories \
+                echo "key verification succeeded!"; \
+                mv /tmp/nginx_signing.rsa.pub /etc/apk/keys/; \
+            else \
+                echo "key verification failed!"; \
+                exit 1; \
+            fi \
             && apk del .cert-deps \
+            && apk add -X "https://nginx.org/packages/mainline/alpine/v${NGINX_ALPINE}/main" --no-cache $nginxPackages \
             ;; \
         *) \
 # we're on an architecture upstream doesn't officially build for
@@ -69,7 +67,7 @@ RUN set -x \
                 bash \
                 alpine-sdk \
                 findutils \
-            && su - nobody -s /bin/sh -c " \
+            && su nobody -s /bin/sh -c " \
                 export HOME=${tempDir} \
                 && cd ${tempDir} \
                 && hg clone https://hg.nginx.org/pkg-oss \
@@ -80,18 +78,15 @@ RUN set -x \
                 && apk index -o ${tempDir}/packages/alpine/${apkArch}/APKINDEX.tar.gz ${tempDir}/packages/alpine/${apkArch}/*.apk \
                 && abuild-sign -k ${tempDir}/.abuild/abuild-key.rsa ${tempDir}/packages/alpine/${apkArch}/APKINDEX.tar.gz \
                 " \
-            && echo "${tempDir}/packages/alpine/" >> /etc/apk/repositories \
             && cp ${tempDir}/.abuild/abuild-key.rsa.pub /etc/apk/keys/ \
             && apk del .build-deps \
+            && apk add -X ${tempDir}/packages/alpine/ --no-cache $nginxPackages \
             ;; \
     esac \
-    && apk add --no-cache $nginxPackages \
 # if we have leftovers from building, let's purge them (including extra, unnecessary build deps)
     && if [ -n "$tempDir" ]; then rm -rf "$tempDir"; fi \
     && if [ -n "/etc/apk/keys/abuild-key.rsa.pub" ]; then rm -f /etc/apk/keys/abuild-key.rsa.pub; fi \
     && if [ -n "/etc/apk/keys/nginx_signing.rsa.pub" ]; then rm -f /etc/apk/keys/nginx_signing.rsa.pub; fi \
-# remove the last line with the packages repos in the repositories file
-    && sed -i '$ d' /etc/apk/repositories \
 # Bring in gettext so we can get `envsubst`, then throw
 # the rest away. To do this, we need to install `gettext`
 # then move `envsubst` out of the way so `gettext` can
